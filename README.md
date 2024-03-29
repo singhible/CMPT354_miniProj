@@ -6,10 +6,12 @@ This project implements a database application using SQLite and Python for manag
 
 To set up the database, run the `create_database.py` script. This will create the SQLite database named `research_grant_council.db` and set up the necessary tables and constraints.
 
-````bash
+```bash
 python create_database.py
+```
 
 ## To run the application
+
 ```bash
 python db_app.py
-````
+```
