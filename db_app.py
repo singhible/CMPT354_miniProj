@@ -148,8 +148,19 @@ if __name__ == "__main__":
     avg_discrepancy = average_discrepancy(area)
     print("Average discrepancy:", avg_discrepancy)
 
-    print("\nTask 5: Assign reviewers to review a specific grant application (not implemented)")
-
+    print("\nTask 5: Assign reviewers to review a specific grant application")
+    proposal_id = int(input("Enter the proposal ID to assign reviewers: "))
+    num_reviewers = int(input("Enter the number of reviewers to assign: "))
+    reviewer_ids = []
+    for i in range(num_reviewers):
+        reviewer_id = int(input(f"Enter reviewer ID {i+1}: "))
+        reviewer_ids.append(reviewer_id)
+    success = assign_reviewers(proposal_id, reviewer_ids)
+    if success:
+        print("Reviewers assigned successfully.")
+    else:
+        print("Failed to assign reviewers.")
+        
     print("\nTask 6: Find the proposal(s) a user needs to review")
     name = input("Enter reviewer's name: ")
     proposals_to_review = find_proposals_to_review(name)
