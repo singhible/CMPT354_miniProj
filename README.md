@@ -11,7 +11,7 @@ Then install faker using `pip install Faker`
 
 ## Database Setup
 
-To set up the database, run the `create_database.py` script. This will create the SQLite database named `research_grant_council.db` and set up the necessary tables and constraints.
+To set up the database, run the `create_database.py` script. This will create the SQLite database named `council.db` and set up the necessary tables and constraints. After creation you need to run `python3 insert_data.py` to insert the data into the database.
 
 ```bash
 python create_database.py
