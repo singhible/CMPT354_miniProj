@@ -17,8 +17,16 @@ To set up the database, run the `create_database.py` script. This will create th
 python create_database.py
 ```
 
-## To run the application
+## To run the application or view the contents
+
+Use the command below to run the application
 
 ```bash
 python db_app.py
+```
+
+To view the contents of the database you can do the following: `python3 db_app.py --view <table name>` for example, if you want to view the table Competition in our database, do the following:
+
+```bash
+python db_app.py --view Competition
 ```

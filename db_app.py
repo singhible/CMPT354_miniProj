@@ -1,7 +1,24 @@
+import argparse
 import sqlite3
 
 conn = sqlite3.connect('research_grant_council.db')
 cursor = conn.cursor()
+
+def view_table_contents(table_name):
+    """
+    Fetches and displays all contents from the specified table.
+
+    Parameters:
+        table_name (str): The name of the table to view.
+    """
+    query = f"SELECT * FROM {table_name}"
+    try:
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        for row in rows:
+            print(row)
+    except sqlite3.Error as e:
+        print(f"Error fetching data from {table_name}:", e)
 
 def find_open_competitions(month):
     """
@@ -128,42 +145,49 @@ def find_proposals_to_review(name):
     return cursor.fetchall()
 
 if __name__ == "__main__":
-    print("Task 1: Find open competitions with at least one large proposal in a specific month")
-    month = input("Enter month (MM): ")
-    open_competitions = find_open_competitions(month)
-    print(open_competitions)
+    parser = argparse.ArgumentParser(description="Database Application for Research Grant Council")
+    parser.add_argument("--view", help="View the contents of a specified database table", metavar="TABLE_NAME")
 
-    print("\nTask 2: Find proposal(s) requesting the largest amount of money in a specific area")
-    area = input("Enter area: ")
-    largest_amount_proposal = find_largest_amount_proposal(area)
-    print(largest_amount_proposal)
-
-    print("\nTask 3: Find proposals submitted before a specific date that are awarded the largest amount of money")
-    date = input("Enter date (YYYY-MM-DD): ")
-    largest_awarded_proposals = find_largest_awarded_proposals(date)
-    print(largest_awarded_proposals)
-
-    print("\nTask 4: Output the average requested/awarded discrepancy for a specific area")
-    area = input("Enter area: ")
-    avg_discrepancy = average_discrepancy(area)
-    print("Average discrepancy:", avg_discrepancy)
-
-    print("\nTask 5: Assign reviewers to review a specific grant application")
-    proposal_id = int(input("Enter the proposal ID to assign reviewers: "))
-    num_reviewers = int(input("Enter the number of reviewers to assign: "))
-    reviewer_ids = []
-    for i in range(num_reviewers):
-        reviewer_id = int(input(f"Enter reviewer ID {i+1}: "))
-        reviewer_ids.append(reviewer_id)
-    success = assign_reviewers(proposal_id, reviewer_ids)
-    if success:
-        print("Reviewers assigned successfully.")
+    args = parser.parse_args()
+    if args.view:
+        view_table_contents(args.view)
     else:
-        print("Failed to assign reviewers.")
-        
-    print("\nTask 6: Find the proposal(s) a user needs to review")
-    name = input("Enter reviewer's name: ")
-    proposals_to_review = find_proposals_to_review(name)
-    print(proposals_to_review)
+        print("Task 1: Find open competitions with at least one large proposal in a specific month")
+        month = input("Enter month (MM): ")
+        open_competitions = find_open_competitions(month)
+        print(open_competitions)
+
+        print("\nTask 2: Find proposal(s) requesting the largest amount of money in a specific area")
+        area = input("Enter area: ")
+        largest_amount_proposal = find_largest_amount_proposal(area)
+        print(largest_amount_proposal)
+
+        print("\nTask 3: Find proposals submitted before a specific date that are awarded the largest amount of money")
+        date = input("Enter date (YYYY-MM-DD): ")
+        largest_awarded_proposals = find_largest_awarded_proposals(date)
+        print(largest_awarded_proposals)
+
+        print("\nTask 4: Output the average requested/awarded discrepancy for a specific area")
+        area = input("Enter area: ")
+        avg_discrepancy = average_discrepancy(area)
+        print("Average discrepancy:", avg_discrepancy)
+
+        print("\nTask 5: Assign reviewers to review a specific grant application")
+        proposal_id = int(input("Enter the proposal ID to assign reviewers: "))
+        num_reviewers = int(input("Enter the number of reviewers to assign: "))
+        reviewer_ids = []
+        for i in range(num_reviewers):
+            reviewer_id = int(input(f"Enter reviewer ID {i+1}: "))
+            reviewer_ids.append(reviewer_id)
+        success = assign_reviewers(proposal_id, reviewer_ids)
+        if success:
+            print("Reviewers assigned successfully.")
+        else:
+            print("Failed to assign reviewers.")
+            
+        print("\nTask 6: Find the proposal(s) a user needs to review")
+        name = input("Enter reviewer's name: ")
+        proposals_to_review = find_proposals_to_review(name)
+        print(proposals_to_review)
 
 conn.close()
