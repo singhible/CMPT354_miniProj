@@ -33,8 +33,8 @@ def create_database():
             competition_description TEXT,
             competition_area TEXT,
             competition_status TEXT,
-            competition_deadline DATE,
-            CHECK (competition_deadline >= DATE('now'))
+            competition_deadline DATE
+            -- Removed the CHECK constraint that was causing the issue
         )
     ''')
 
@@ -80,9 +80,9 @@ def create_database():
             review_submitted BOOLEAN,
             FOREIGN KEY (competition_id) REFERENCES Competition(competition_id) ON DELETE CASCADE,
             FOREIGN KEY (reviewer_id) REFERENCES Reviewer(reviewer_id),
-            FOREIGN KEY (proposal_id) REFERENCES Proposal(proposal_id),
-            CHECK (review_deadline >= DATE('now'))
+            FOREIGN KEY (proposal_id) REFERENCES Proposal(proposal_id)
         )
+
     ''')
 
     cursor.execute('''
