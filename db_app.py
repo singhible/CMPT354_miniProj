@@ -1,7 +1,7 @@
 import argparse
 import sqlite3
 
-conn = sqlite3.connect('research_grant_council.db')
+conn = sqlite3.connect('council.db')
 cursor = conn.cursor()
 
 def view_table_contents(table_name):
@@ -133,16 +133,19 @@ def find_proposals_to_review(name):
         name (str): The name of the reviewer.
 
     Returns:
-        list: A list of tuples containing proposal IDs and titles to be reviewed by the user.
+        list: A list of tuples containing proposal IDs and competition titles to be reviewed by the user.
     """
     cursor.execute("""
-        SELECT p.proposal_id, p.proposal_title
+        SELECT p.proposal_id, c.competition_title
         FROM Proposal p
         JOIN ReviewAssignment ra ON p.proposal_id = ra.proposal_id
         JOIN Reviewer r ON ra.reviewer_id = r.reviewer_id
-        WHERE r.first_name || ' ' || r.last_name = ?
+        JOIN Researcher res ON r.reviewer_id = res.researcher_id
+        JOIN Competition c ON p.competition_id = c.competition_id
+        WHERE res.first_name || ' ' || res.last_name = ?
     """, (name,))
     return cursor.fetchall()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Database Application for Research Grant Council")

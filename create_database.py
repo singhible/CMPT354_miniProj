@@ -2,7 +2,7 @@ import sqlite3
 
 
 def create_database():
-    conn = sqlite3.connect('research_grant_council.db')
+    conn = sqlite3.connect('council.db')
     cursor = conn.cursor()
 
     # Create tables with constraints
