@@ -114,7 +114,6 @@ def create_database():
         )
     ''')
 
-    # Commit changes and close connection
     conn.commit()
     conn.close()
 
