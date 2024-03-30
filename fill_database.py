@@ -124,7 +124,7 @@ def insert_meeting_participations(cursor, n=10):
         )
 
 def fill_database():
-    conn = sqlite3.connect('research_grant_council.db')
+    conn = sqlite3.connect('council.db')
     cursor = conn.cursor()
 
     insert_organizations(cursor)
