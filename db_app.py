@@ -1,6 +1,6 @@
 import sqlite3
 
-conn = sqlite3.connect('research_database.db')
+conn = sqlite3.connect('research_grant_council.db')
 cursor = conn.cursor()
 
 def find_open_competitions(month):
