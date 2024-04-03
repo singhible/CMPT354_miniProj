@@ -1,5 +1,6 @@
 import argparse
 import sqlite3
+from datetime import datetime
 
 conn = sqlite3.connect('council.db')
 cursor = conn.cursor()
@@ -63,6 +64,13 @@ def find_largest_amount_proposal(area):
     """, (area,))
     return cursor.fetchall()
 
+def validate_date(date_text):
+    try:
+        datetime.strptime(date_text, '%Y-%m-%d')
+        return True
+    except ValueError:
+        return False
+    
 def find_largest_awarded_proposals(date):
     """
     Find proposals submitted before a user-specified date that are awarded the largest amount of money.
@@ -156,24 +164,20 @@ def assign_reviewers(proposal_id):
 
     reviewers_assigned = 0
     while reviewers_assigned < 3 and check_reviewer_limit(proposal_id):
-        reviewer_id = input("Enter reviewer ID to assign (or 'done' to finish): ")
-        if reviewer_id.lower() == 'done':
+        reviewer_id_input = input("Enter reviewer ID to assign (or 'done' to finish): ")
+        if reviewer_id_input.lower() == 'done':
             break
         try:
-            reviewer_id = int(reviewer_id)
-        except ValueError:
-            print("Please enter a valid integer ID or 'done'.")
-            continue
-
-        if reviewer_id not in eligible_reviewers:
-            print("This reviewer is not eligible or already assigned.")
-            continue
-
-        try:
+            reviewer_id = int(reviewer_id_input)
+            if reviewer_id not in eligible_reviewers:
+                print("This reviewer is not eligible or already assigned.")
+                continue
             cursor.execute("INSERT INTO ReviewAssignment (proposal_id, reviewer_id) VALUES (?, ?)", (proposal_id, reviewer_id))
             conn.commit()
             reviewers_assigned += 1
             print(f"Reviewer {reviewer_id} assigned successfully.")
+        except ValueError:
+            print("Please enter a valid integer ID or 'done'.")
         except sqlite3.Error as e:
             print("Error assigning reviewer:", e)
             conn.rollback()
@@ -214,19 +218,29 @@ if __name__ == "__main__":
         view_table_contents(args.view)
     else:
         print("Task 1: Find open competitions with at least one large proposal in a specific month")
-        month = input("Enter month (MM): ")
-        open_competitions = find_open_competitions(month)
-        print(open_competitions)
+        while True:
+            month = input("Enter month (MM): ")
+            if month.isdigit() and len(month) == 2 and 1 <= int(month) <= 12:
+                open_competitions = find_open_competitions(month)
+                print(open_competitions)
+                break
+            else:
+                print("Please enter a valid month in MM format (e.g., '03' for March).")
 
         print("\nTask 2: Find proposal(s) requesting the largest amount of money in a specific area")
         area = input("Enter area: ")
         largest_amount_proposal = find_largest_amount_proposal(area)
         print(largest_amount_proposal)
 
-        print("\nTask 3: Find proposals submitted before a specific date that are awarded the largest amount of money")
-        date = input("Enter date (YYYY-MM-DD): ")
-        largest_awarded_proposals = find_largest_awarded_proposals(date)
-        print(largest_awarded_proposals)
+        print("Task 3: Find proposals submitted before a specific date that are awarded the largest amount of money")
+        while True:
+            date = input("Enter date (YYYY-MM-DD): ")
+            if validate_date(date):
+                largest_awarded_proposals = find_largest_awarded_proposals(date)
+                print(largest_awarded_proposals)
+                break
+            else:
+                print("Please enter the date in YYYY-MM-DD format.")
 
         print("\nTask 4: Output the average requested/awarded discrepancy for a specific area")
         area = input("Enter area: ")
@@ -234,7 +248,14 @@ if __name__ == "__main__":
         print("Average discrepancy:", avg_discrepancy)
 
         print("\nTask 5: Assign reviewers to review a specific grant application")
-        proposal_id = int(input("Enter the proposal ID to assign reviewers to: "))
+        while True:
+            proposal_id_input = input("Enter the proposal ID to assign reviewers to: ")
+            try:
+                proposal_id = int(proposal_id_input)
+                break  # Exit the loop if the input can be converted to an integer successfully.
+            except ValueError:
+                print("Please enter a valid integer for the proposal ID.")
+
         assign_reviewers(proposal_id)
             
         print("\nTask 6: Find the proposal(s) a user needs to review")
