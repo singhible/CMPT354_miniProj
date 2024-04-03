@@ -32,7 +32,7 @@ def create_database():
             competition_title TEXT NOT NULL,
             competition_description TEXT,
             competition_area TEXT,
-            competition_status TEXT CHECK(competition_status IN ('open', 'closed')) NOT NULL,
+            competition_status TEXT CHECK(competition_status IN ('Open', 'Closed')) NOT NULL,
             competition_deadline DATE
             -- Removed the CHECK constraint that was causing the issue
         )
@@ -44,7 +44,7 @@ def create_database():
             requested_amount DECIMAL(15, 2) NOT NULL,
             competition_id INTEGER,
             principle_investigator_id INTEGER,
-            proposal_status TEXT CHECK(proposal_status IN ('submitted', 'awarded', 'not awarded')) NOT NULL,
+            proposal_status TEXT CHECK(proposal_status IN ('Submitted', 'Awarded', 'Not Awarded')) NOT NULL,
             awarded_amount DECIMAL(15, 2),
             awarded_date DATE,
             FOREIGN KEY (competition_id) REFERENCES Competition(competition_id) ON DELETE CASCADE,
@@ -112,6 +112,17 @@ def create_database():
             FOREIGN KEY (competition_id) REFERENCES Competition(competition_id),
             FOREIGN KEY (reviewer_id) REFERENCES Reviewer(reviewer_id)
         )
+    ''')
+    
+    # Execute the SQL statement to create the trigger
+    cursor.execute('''
+        CREATE TRIGGER IF NOT EXISTS trg_insert_award_check
+        BEFORE INSERT ON Proposal
+        FOR EACH ROW
+        WHEN NEW.proposal_status != 'Awarded' AND (NEW.awarded_amount IS NOT NULL OR NEW.awarded_date IS NOT NULL)
+        BEGIN
+            SELECT RAISE(FAIL, 'Only awarded proposals can have awarded_amount and awarded_date.');
+        END;
     ''')
 
     conn.commit()
