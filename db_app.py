@@ -98,32 +98,90 @@ def average_discrepancy(area):
     """, (area,))
     return cursor.fetchone()[0]
 
-def assign_reviewers(proposal_id, reviewer_ids):
+def check_reviewer_limit(proposal_id):
     """
-    Assign reviewers to review a specific grant application.
+    Check if adding another reviewer would exceed the limit of 3 reviewers per proposal.
+    """
+    cursor.execute("SELECT COUNT(*) FROM ReviewAssignment WHERE proposal_id = ?", (proposal_id,))
+    count = cursor.fetchone()[0]
+    return count < 3
+
+def fetch_eligible_reviewers(proposal_id):
+    """
+    Fetches reviewers who are not in conflict with the proposal and have reviewed less than three proposals.
 
     Parameters:
-        proposal_id (int): The ID of the proposal to be reviewed.
-        reviewer_ids (list): A list of reviewer IDs to be assigned to review the proposal.
+        proposal_id (int): The ID of the proposal to find eligible reviewers for.
 
     Returns:
-        bool: True if reviewers are successfully assigned, False otherwise.
+        list: A list of tuples containing eligible reviewer IDs and names.
     """
-    try:
-        # Remove any existing review assignments for the proposal
-        cursor.execute("DELETE FROM ReviewAssignment WHERE proposal_id = ?", (proposal_id,))
-        
-        # Assign reviewers to review the proposal
-        for reviewer_id in reviewer_ids:
+    cursor.execute("""
+    SELECT r.reviewer_id, res.first_name || ' ' || res.last_name AS name
+    FROM Reviewer r
+    JOIN Researcher res ON r.reviewer_id = res.researcher_id
+    WHERE r.reviewer_id NOT IN (
+        SELECT reviewer_id FROM ReviewAssignment WHERE proposal_id = ?
+    )
+    AND r.reviewer_id NOT IN (
+        SELECT coi.reviewer_id 
+        FROM ConflictOfInterest coi
+        WHERE coi.conflicted_researcher_id IN (
+            SELECT principle_investigator_id FROM Proposal WHERE proposal_id = ?
+            UNION
+            SELECT collaborator_id FROM ProposalCollaborator WHERE proposal_id = ?
+        )
+    )
+    AND (
+        SELECT COUNT(*) 
+        FROM ReviewAssignment ra 
+        WHERE ra.reviewer_id = r.reviewer_id
+    ) < 3;
+    """, (proposal_id, proposal_id,proposal_id))
+    results = cursor.fetchall()
+    for result in results:
+        print(f"ID: {result[0]}, Name: {result[1]}")
+    return [result[0] for result in results]
+
+def assign_reviewers(proposal_id):
+    """
+    Assign up to 3 reviewers to review a specific grant application, input one by one.
+    """
+    print("Fetching eligible reviewers for the proposal...")
+    eligible_reviewers = fetch_eligible_reviewers(proposal_id)
+    
+    if not eligible_reviewers:
+        print("No eligible reviewers available for this proposal.")
+        return
+
+    reviewers_assigned = 0
+    while reviewers_assigned < 3 and check_reviewer_limit(proposal_id):
+        reviewer_id = input("Enter reviewer ID to assign (or 'done' to finish): ")
+        if reviewer_id.lower() == 'done':
+            break
+        try:
+            reviewer_id = int(reviewer_id)
+        except ValueError:
+            print("Please enter a valid integer ID or 'done'.")
+            continue
+
+        if reviewer_id not in eligible_reviewers:
+            print("This reviewer is not eligible or already assigned.")
+            continue
+
+        try:
             cursor.execute("INSERT INTO ReviewAssignment (proposal_id, reviewer_id) VALUES (?, ?)", (proposal_id, reviewer_id))
-        
-        # Commit the changes
-        conn.commit()
-        return True
-    except sqlite3.Error as e:
-        print("Error assigning reviewers:", e)
-        conn.rollback()
-        return False
+            conn.commit()
+            reviewers_assigned += 1
+            print(f"Reviewer {reviewer_id} assigned successfully.")
+        except sqlite3.Error as e:
+            print("Error assigning reviewer:", e)
+            conn.rollback()
+
+    if reviewers_assigned == 3:
+        print("Maximum number of reviewers assigned.")
+    elif not check_reviewer_limit(proposal_id):
+        print("This proposal has reached the maximum number of reviewers.")
 
 def find_proposals_to_review(name):
     """
@@ -176,17 +234,8 @@ if __name__ == "__main__":
         print("Average discrepancy:", avg_discrepancy)
 
         print("\nTask 5: Assign reviewers to review a specific grant application")
-        proposal_id = int(input("Enter the proposal ID to assign reviewers: "))
-        num_reviewers = int(input("Enter the number of reviewers to assign: "))
-        reviewer_ids = []
-        for i in range(num_reviewers):
-            reviewer_id = int(input(f"Enter reviewer ID {i+1}: "))
-            reviewer_ids.append(reviewer_id)
-        success = assign_reviewers(proposal_id, reviewer_ids)
-        if success:
-            print("Reviewers assigned successfully.")
-        else:
-            print("Failed to assign reviewers.")
+        proposal_id = int(input("Enter the proposal ID to assign reviewers to: "))
+        assign_reviewers(proposal_id)
             
         print("\nTask 6: Find the proposal(s) a user needs to review")
         name = input("Enter reviewer's name: ")
