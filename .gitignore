@@ -2,3 +2,4 @@
 .project
 council.db
 .vscode/
+.DS_Store
