@@ -261,7 +261,7 @@ def main_menu():
 
             area = input("Enter area: ")
             avg_discrepancy = average_discrepancy(area)
-            if average_discrepancy is not 0:
+            if average_discrepancy != 0:
                 print("Average discrepancy:", avg_discrepancy)
             else:
                 print("There is either no average discrepancy for the specified area or the input area is non-existent")
