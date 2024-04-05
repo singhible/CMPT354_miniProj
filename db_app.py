@@ -284,7 +284,7 @@ def main_menu():
                 print("Either no proposals to review or no such reviewer")
 
         elif choice == "7":
-            table_name = input("Enter the table name to view its contents: ")
+            table_name = input("Enter the table name to view its contents (Researcher,Organization,Competition,Proposal,ProposalCollaborator,Reviewer,ReviewAssignment,ConflictOfInterest,Meeting,MeetingParticipation): ")
             view_table_contents(table_name)
         else:
             print("Invalid choice, please try again.")
