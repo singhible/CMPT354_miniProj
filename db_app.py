@@ -208,59 +208,88 @@ def find_proposals_to_review(name):
     """, (name,))
     return cursor.fetchall()
 
+def main_menu():
+    while True:
+        print("\nChoose an option:")
+        print("1. Find open competitions with at least one large proposal in a specific month")
+        print("2. Find proposal(s) requesting the largest amount of money in a specific area")
+        print("3. Find proposal(s) submitted before a specific date that are awarded the largest amount of money")
+        print("4. Output the average requested/awarded discrepancy for a specific area")
+        print("5. Assign reviewers to review a specific grant application")
+        print("6. Find the proposal(s) a user needs to review")
+        print("7. View Table Contents")
+        print("0. Exit")
+        choice = input("> ")
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Database Application for Research Grant Council")
-    parser.add_argument("--view", help="View the contents of a specified database table", metavar="TABLE_NAME")
-
-    args = parser.parse_args()
-    if args.view:
-        view_table_contents(args.view)
-    else:
-        print("Task 1: Find open competitions with at least one large proposal in a specific month")
-        while True:
+        if choice == "0":
+            break
+        elif choice == "1":
             month = input("Enter month (MM): ")
             if month.isdigit() and len(month) == 2 and 1 <= int(month) <= 12:
                 open_competitions = find_open_competitions(month)
-                print(open_competitions)
-                break
+                if open_competitions:  # This checks if the list is not empty
+                    for competition in open_competitions:
+                        print(competition)
+                else:
+                    print("No competitions found for this month.")
             else:
                 print("Please enter a valid month in MM format (e.g., '03' for March).")
 
-        print("\nTask 2: Find proposal(s) requesting the largest amount of money in a specific area")
-        area = input("Enter area: ")
-        largest_amount_proposal = find_largest_amount_proposal(area)
-        print(largest_amount_proposal)
+        elif choice == "2":
+            area = input("Enter area: ")
+            largest_amount_proposal = find_largest_amount_proposal(area)
+            if largest_amount_proposal and largest_amount_proposal[0][0] is not None:
+                for proposal in largest_amount_proposal:
+                    print(proposal)
+            else:
+                print("No proposals found for the specified area.")
 
-        print("Task 3: Find proposals submitted before a specific date that are awarded the largest amount of money")
-        while True:
+        elif choice == "3":
+
             date = input("Enter date (YYYY-MM-DD): ")
             if validate_date(date):
                 largest_awarded_proposals = find_largest_awarded_proposals(date)
-                print(largest_awarded_proposals)
-                break
+                if largest_awarded_proposals and largest_awarded_proposals[0][0] is not None:
+                    for proposals in largest_awarded_proposals:
+                        print(proposals)
+                else:
+                    print("No awarded proposals exist.")
             else:
                 print("Please enter the date in YYYY-MM-DD format.")
 
-        print("\nTask 4: Output the average requested/awarded discrepancy for a specific area")
-        area = input("Enter area: ")
-        avg_discrepancy = average_discrepancy(area)
-        print("Average discrepancy:", avg_discrepancy)
+        elif choice == "4":
 
-        print("\nTask 5: Assign reviewers to review a specific grant application")
-        while True:
+            area = input("Enter area: ")
+            avg_discrepancy = average_discrepancy(area)
+            if average_discrepancy is not 0:
+                print("Average discrepancy:", avg_discrepancy)
+            else:
+                print("There is either no average discrepancy for the specified area or the input area is non-existent")
+
+        elif choice == "5":
             proposal_id_input = input("Enter the proposal ID to assign reviewers to: ")
             try:
                 proposal_id = int(proposal_id_input)
-                break  # Exit the loop if the input can be converted to an integer successfully.
             except ValueError:
                 print("Please enter a valid integer for the proposal ID.")
 
-        assign_reviewers(proposal_id)
-            
-        print("\nTask 6: Find the proposal(s) a user needs to review")
-        name = input("Enter reviewer's name: ")
-        proposals_to_review = find_proposals_to_review(name)
-        print(proposals_to_review)
+            assign_reviewers(proposal_id)
 
-conn.close()
+        elif choice == "6":
+            name = input("Enter reviewer's name: ")
+            proposals_to_review = find_proposals_to_review(name)
+            if (proposals_to_review is not None):
+                print(proposals_to_review)
+            else:
+                print("Either no proposals to review or no such reviewer")
+
+        elif choice == "7":
+            table_name = input("Enter the table name to view its contents: ")
+            view_table_contents(table_name)
+        else:
+            print("Invalid choice, please try again.")
+
+
+if __name__ == "__main__":
+    main_menu()
+    conn.close()
