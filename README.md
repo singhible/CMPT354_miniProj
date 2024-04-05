@@ -24,9 +24,13 @@ Use the command below to run the application
 ```bash
 python db_app.py
 ```
+Once the application is running, you will be given following options, where options 1-6 relate to the specified tasks in project Step 7, option 7 is for vieweing the table contents and 0 to exit the application:
 
-To view the contents of the database you can do the following: `python3 db_app.py --view <table name>` for example, if you want to view the table Competition in our database, do the following:
-
-```bash
-python db_app.py --view Competition
-```
+1. Find open competitions with at least one large proposal in a specific month
+2. Find proposal(s) requesting the largest amount of money in a specific area
+3. Find proposal(s) submitted before a specific date that are awarded the largest amount of money
+4. Output the average requested/awarded discrepancy for a specific area
+5. Assign reviewers to review a specific grant application
+6. Find the proposal(s) a user needs to review
+7. View Table Contents
+0. Exit
